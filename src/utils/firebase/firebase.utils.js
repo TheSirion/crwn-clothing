@@ -3,9 +3,11 @@ import {
   createUserWithEmailAndPassword,
   getAuth,
   GoogleAuthProvider,
+  onAuthStateChanged,
   signInWithEmailAndPassword,
   signInWithPopup,
   signInWithRedirect,
+  signOut,
 } from "firebase/auth";
 import { doc, getDoc, getFirestore, setDoc } from "firebase/firestore";
 
@@ -19,7 +21,7 @@ const firebaseConfig = {
   appId: "1:179146606602:web:886491a9b67b50a2e977f3",
 };
 
-// Initialize Firebase
+// Initializa o Firebase
 const firebaseApp = initializeApp(firebaseConfig);
 
 // inicializa e configura o provider do Google
@@ -52,11 +54,11 @@ export const createUserDocumentFromAuth = async (
   if (!userAuth) return;
   const userDocRef = doc(db, "users", userAuth.uid);
 
-  console.log("userDocRef", userDocRef);
+  // console.log("userDocRef", userDocRef);
 
   const userSnapshot = await getDoc(userDocRef);
-  console.log("userSnapshot", userSnapshot);
-  console.log("userSnapshot exists?", userSnapshot.exists());
+  // console.log("userSnapshot", userSnapshot);
+  // console.log("userSnapshot exists?", userSnapshot.exists());
 
   // se o usuário não existir no banco de dados, criar um novo registro para aquele usuário
   if (!userSnapshot.exists()) {
@@ -95,3 +97,12 @@ export const signInAuthUserWithEmailAndPassword = async (email, password) => {
   if (!email || !password) return;
   return await signInWithEmailAndPassword(auth, email, password);
 };
+
+// faz o logout do usuário
+// usando 'auth' como parâmetro para garantir que o usuário
+// que está fazendo logout é o mesmo que está logado
+export const signOutUser = async () => await signOut(auth);
+
+// observa mudanças no status de login do usuário
+export const onAuthStateChangedListener = callback =>
+  onAuthStateChanged(auth, callback);

@@ -19,8 +19,6 @@ const SignUpForm = () => {
   const [formFields, setFormFields] = useState(defaultFormfields);
   const { displayName, email, password, confirmPassword } = formFields;
 
-  console.log(formFields);
-
   const resetFormFields = () => {
     setFormFields(defaultFormfields);
   }
@@ -35,8 +33,10 @@ const SignUpForm = () => {
       // cria o usuário no Firebase Authentication
       // e retorna um objeto com a propriedade user que contém os dados do usuário
       const { user } = await createAuthUserWithEmailAndPassword(email, password);
+
       // cria o usuário no Firestore
       await createUserDocumentFromAuth(user, { displayName });
+
       // limpa os campos do formulário
       resetFormFields();
 
