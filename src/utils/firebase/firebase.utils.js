@@ -9,7 +9,16 @@ import {
   signInWithRedirect,
   signOut,
 } from "firebase/auth";
-import { doc, getDoc, getFirestore, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  getFirestore,
+  query,
+  setDoc,
+  writeBatch,
+} from "firebase/firestore";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -44,6 +53,40 @@ export const signInWithGoogleRedirect = () =>
 
 export const db = getFirestore();
 
+export const addCollectionAndDocuments = async (
+  collectionKey,
+  objectsToAdd,
+  field = "title"
+) => {
+  // acessa a coleção no banco de dados do Firebase com a chave passada
+  const collectionRef = collection(db, collectionKey);
+  // permite agrupar várias operações de gravação em uma única solicitação
+  const batch = writeBatch(db);
+
+  // para cada objeto no array de objetos, cria um novo documento com o título do objeto
+  objectsToAdd.forEach(obj => {
+    const docRef = doc(collectionRef, obj[field].toLowerCase());
+    batch.set(docRef, obj);
+  });
+
+  await batch.commit();
+  console.log("DONE!");
+};
+
+export const getCategoriesAndDocuments = async () => {
+  const collectionRef = collection(db, "categories");
+  const q = query(collectionRef);
+
+  const querySnapshot = await getDocs(q);
+  const categoryMap = querySnapshot.docs.reduce((acc, docSnapshot) => {
+    const { title, items } = docSnapshot.data();
+    acc[title.toLowerCase()] = items;
+    return acc;
+  }, {});
+
+  return categoryMap;
+};
+
 // registra o usuário no banco de dados do Firebase
 // se o usuário já existir, retorna o documento do usuário
 // se o usuário não existir, cria um novo documento para o usuário
@@ -52,13 +95,9 @@ export const createUserDocumentFromAuth = async (
   additionalInformation = {}
 ) => {
   if (!userAuth) return;
+
   const userDocRef = doc(db, "users", userAuth.uid);
-
-  // console.log("userDocRef", userDocRef);
-
   const userSnapshot = await getDoc(userDocRef);
-  // console.log("userSnapshot", userSnapshot);
-  // console.log("userSnapshot exists?", userSnapshot.exists());
 
   // se o usuário não existir no banco de dados, criar um novo registro para aquele usuário
   if (!userSnapshot.exists()) {
