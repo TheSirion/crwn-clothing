@@ -3,17 +3,18 @@ import {
   compose,
   legacy_createStore as createStore,
 } from "redux";
+import logger from "redux-logger";
 import { persistReducer } from "redux-persist";
 import persistStore from "redux-persist/es/persistStore";
 import storage from "redux-persist/lib/storage";
+import thunk from "redux-thunk";
 
-import { loggerMiddleware } from "./middleware/logger";
 import { rootReducer } from "./root-reducer";
 
 const persistConfig = {
   key: "root",
   storage,
-  blacklist: ["user"],
+  whitelist: ["cart"],
 };
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -23,7 +24,8 @@ const middlewares = [
   // em ambiente de desenvolvimento, e não em produção
   // o filter() retornará o middleware apenas se a expressão resultar em `true`
   // caso contrário, retornará uma array vazia.
-  process.env.NODE_ENV === "development" && loggerMiddleware,
+  process.env.NODE_ENV === "development" && logger,
+  thunk,
 ].filter(Boolean);
 
 const composeEnhancer =
