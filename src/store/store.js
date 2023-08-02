@@ -7,15 +7,18 @@ import logger from "redux-logger";
 import { persistReducer } from "redux-persist";
 import persistStore from "redux-persist/es/persistStore";
 import storage from "redux-persist/lib/storage";
-import thunk from "redux-thunk";
+import createSagaMiddleware from "redux-saga";
 
 import { rootReducer } from "./root-reducer";
+import { rootSaga } from "./root-saga";
 
 const persistConfig = {
   key: "root",
   storage,
   whitelist: ["cart"],
 };
+
+const sagaMiddleware = createSagaMiddleware();
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
@@ -25,7 +28,8 @@ const middlewares = [
   // o filter() retornará o middleware apenas se a expressão resultar em `true`
   // caso contrário, retornará uma array vazia.
   process.env.NODE_ENV === "development" && logger,
-  thunk,
+  // thunk,
+  sagaMiddleware,
 ].filter(Boolean);
 
 const composeEnhancer =
@@ -45,5 +49,10 @@ export const store = createStore(
   undefined,
   composedEnhancers
 );
+
+// Saga Middleware tem uma forma de executar sagas que é diferente da forma
+// como o Redux Thunk faz. Enquanto o Redux Thunk usa o método
+// `store.dispatch()`, o Redux Saga usa o método `sagaMiddleware.run()`.
+sagaMiddleware.run(rootSaga);
 
 export const persistor = persistStore(store);

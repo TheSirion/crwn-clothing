@@ -1,8 +1,7 @@
 import { useState } from "react";
-import {
-  createAuthUserWithEmailAndPassword,
-  createUserDocumentFromAuth
-} from "../../utils/firebase/firebase.utils";
+import { useDispatch } from "react-redux";
+
+import { signUpStart } from "../../store/user/user.action";
 import Button, { BUTTON_TYPE_CLASSES } from "../button/button.component";
 import FormInput from "../form-input/form-input.component";
 import { SignUpContainer, StyledH2 } from "./sign-up-form.styles.jsx";
@@ -16,6 +15,8 @@ const defaultFormfields = {
 };
 
 const SignUpForm = () => {
+  const dispatch = useDispatch();
+
   const [formFields, setFormFields] = useState(defaultFormfields);
   const { displayName, email, password, confirmPassword } = formFields;
 
@@ -30,16 +31,19 @@ const SignUpForm = () => {
       return;
     }
     try {
-      // cria o usuário no Firebase Authentication
-      // e retorna um objeto com a propriedade user que contém os dados do usuário
-      const { user } = await createAuthUserWithEmailAndPassword(email, password);
+      // // cria o usuário no Firebase Authentication
+      // // e retorna um objeto com a propriedade user que contém os dados do usuário
+      // const { user } = await createAuthUserWithEmailAndPassword(email, password);
 
-      // cria o usuário no Firestore
-      await createUserDocumentFromAuth(user, { displayName });
+      // // cria o usuário no Firestore
+      // await createUserDocumentFromAuth(user, { displayName });
 
-      // limpa os campos do formulário
+      // // limpa os campos do formulário
+      // resetFormFields();
+
+
+      dispatch(signUpStart(email, password, displayName));
       resetFormFields();
-
     } catch (error) {
       if (error.code === 'auth/email-already-in-use') {
         alert('Cannot create user, email already in use');
