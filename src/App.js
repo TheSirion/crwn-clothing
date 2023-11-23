@@ -13,7 +13,7 @@ const App = () => {
 
   useEffect(() => {
     dispatch(checkUserSession());
-  }, []);
+  });
 
   return (
     <Routes>
